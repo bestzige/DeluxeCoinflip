@@ -12,7 +12,6 @@ import net.zithium.deluxecoinflip.economy.provider.impl.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,50 +31,65 @@ public class EconomyManager {
      * Load economies
      */
     public void onEnable() {
-        if (!economyProviders.isEmpty()) {
-            economyProviders.clear();
-        }
+        economyProviders.clear();
 
         ConfigurationSection section = plugin.getConfigHandler(ConfigType.CONFIG)
                 .getConfig()
                 .getConfigurationSection("settings.providers");
         Logger logger = plugin.getLogger();
+
         if (section == null) {
-            logger.severe("There are no enabled providers set in the config. Plugin will now disable..");
+            logger.severe("There are no enabled providers set in the config. Plugin will now disable.");
             Bukkit.getPluginManager().disablePlugin(plugin);
             return;
         }
 
-        registerEconomyProvider(new VaultProvider(), "Vault");
-        registerEconomyProvider(new TokenEnchantProvider(), "TokenEnchant");
-        registerEconomyProvider(new TokenManagerProvider(), "TokenManager");
-        registerEconomyProvider(new ZithiumMobcoinsProvider(), "ZithiumMobcoins");
-        registerEconomyProvider(new PlayerPointsProvider(), "PlayerPoints");
-        registerEconomyProvider(new BeastTokensProvider(), "BeastTokens");
+        // List of possible providers.
+        Map<String, EconomyProvider> possibleProviders = Map.of(
+                "Vault", new VaultProvider(),
+                "TokenEnchant", new TokenEnchantProvider(),
+                "TokenManager", new TokenManagerProvider(),
+                "ZithiumMobcoins", new ZithiumMobcoinsProvider(),
+                "PlayerPoints", new PlayerPointsProvider(),
+                "BeastTokens", new BeastTokensProvider(),
+                "CUSTOM_CURRENCY", new CustomCurrencyProvider("CUSTOM_CURRENCY", plugin)
+        );
 
-        // CustomCurrencyProvider is command/placeholder based; no plugin dependency
-        registerEconomyProvider(new CustomCurrencyProvider("CUSTOM_CURRENCY", plugin), null);
+        for (Map.Entry<String, EconomyProvider> entry : possibleProviders.entrySet()) {
+            String key = entry.getKey().toUpperCase();
+            EconomyProvider provider = entry.getValue();
+            ConfigurationSection providerSection = section.getConfigurationSection(key);
 
-        plugin.getScheduler().runTask(() -> {
-            for (EconomyProvider provider : new ArrayList<>(economyProviders.values())) {
-                ConfigurationSection providerSection = section.getConfigurationSection(provider.getIdentifier().toUpperCase());
-                if (providerSection != null) {
-                    if (!providerSection.getBoolean("enabled")) {
-                        economyProviders.remove(provider.getIdentifier().toUpperCase());
-                        continue;
-                    }
+            // If no section or disabled, skip
+            if (providerSection == null || !providerSection.getBoolean("enabled", false)) continue;
 
-                    if (providerSection.contains("display_currency_name")) {
-                        provider.setCurrencyDisplayName(providerSection.getString("display_currency_name"));
-                    }
-
-                    provider.onEnable();
+            // Check plugin dependency if needed (except CustomCurrency)
+            if (!key.equals("CUSTOM_CURRENCY")) {
+                if (plugin.getServer().getPluginManager().getPlugin(key) == null) {
+                    logger.warning("Skipping economy provider '" + key + "' (plugin not found).");
+                    continue;
                 }
             }
 
-            logger.info("Found and using " + String.join(", ", economyProviders.keySet()) + " economy provider(s).");
-        });
+            // Optional display name
+            if (providerSection.contains("display_currency_name")) {
+                provider.setCurrencyDisplayName(providerSection.getString("display_currency_name"));
+            }
+
+            economyProviders.put(key, provider);
+            provider.onEnable();
+            logger.info("Enabled economy provider '" + key + "'.");
+        }
+
+        if (economyProviders.isEmpty()) {
+            logger.severe("No valid economy providers were enabled. Plugin will now disable.");
+            Bukkit.getPluginManager().disablePlugin(plugin);
+            return;
+        }
+
+        logger.info("Found and using " + String.join(", ", economyProviders.keySet()) + " economy provider(s).");
     }
+
 
     /**
      * Register an Economy
@@ -102,7 +116,7 @@ public class EconomyManager {
      * @return The EconomyProvider if found, otherwise null
      */
     public EconomyProvider getEconomyProvider(String identifier) {
-        return economyProviders.get(identifier);
+        return economyProviders.get(identifier.toUpperCase());
     }
 
     /**

@@ -38,7 +38,7 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
         final EconomyProvider economyProvider = economyManager.getEconomyProvider(game.getProvider());
         if (economyProvider == null) {
             plugin.getLogger().warning("[DeluxeCoinflip] Missing economy provider '" + game.getProvider() + "'; refund skipped for " + quitter.getName() + ".");
-            plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID());
+            plugin.getScheduler().runTaskAsynchronously(() -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
             plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
             return;
         }
@@ -56,7 +56,7 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
             );
         }
 
-        plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID());
+        plugin.getScheduler().runTaskAsynchronously(() -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
         plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
     }
 }

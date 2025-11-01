@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
  * Interface for providing custom statistics that can be used in placeholders.
  * External plugins can implement this interface to add their own stat tracking
  * to DeluxeCoinflip's placeholder system.
- * 
+ * <p>
  * Example: DeluxeLifestealBridge could track HEARTS_WIN, HEARTS_LOST, HEARTS_BET
  */
 public interface CustomStatProvider {

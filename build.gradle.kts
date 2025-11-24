@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.13")
     implementation("org.bstats:bstats-bukkit:3.1.0")
     implementation("com.github.ItzSave:ZithiumLibrary:1f5182b77f")
     implementation("com.tcoded:FoliaLib:0.5.1")
@@ -32,7 +32,7 @@ dependencies {
 
     compileOnly("me.clip:placeholderapi:2.11.7")
     compileOnly("com.mojang:authlib:1.5.21")
-    compileOnly("org.jetbrains:annotations:26.0.2")
+    compileOnly("org.jetbrains:annotations:26.0.2-1")
 
     compileOnly("com.github.Realizedd:TokenManager:3.2.4") { isTransitive = false }
     compileOnly("net.milkbowl.vault:VaultAPI:1.7")

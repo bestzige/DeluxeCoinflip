@@ -117,11 +117,9 @@ public class CoinflipGame implements Cloneable {
 
         if (creatorOnline != null) {
             if (canSchedule) {
-                scheduler.runAtEntityLater(creatorOnline, () -> {
-                    if (creatorOnline.isOnline()) {
-                        creatorOnline.closeInventory();
-                    }
-                }, 20L);
+                if (creatorOnline.isOnline()) {
+                    scheduler.runAtEntityLater(creatorOnline, () -> creatorOnline.closeInventory(), 20L);
+                }
             } else {
                 if (creatorOnline.isOnline()) {
                     creatorOnline.closeInventory();
@@ -131,11 +129,9 @@ public class CoinflipGame implements Cloneable {
 
         if (opponentOnline != null) {
             if (canSchedule) {
-                scheduler.runAtEntityLater(opponentOnline, () -> {
-                    if (opponentOnline.isOnline()) {
-                        opponentOnline.closeInventory();
-                    }
-                }, 20L);
+                if (opponentOnline.isOnline()) {
+                    scheduler.runAtEntityLater(opponentOnline, () -> opponentOnline.closeInventory(), 20L);
+                }
             } else {
                 if (opponentOnline.isOnline()) {
                     opponentOnline.closeInventory();

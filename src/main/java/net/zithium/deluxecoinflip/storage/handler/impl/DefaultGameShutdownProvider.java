@@ -42,10 +42,6 @@ public record DefaultGameShutdownProvider(DeluxeCoinflipPlugin plugin) implement
                 continue;
             }
 
-            if (game.isActiveGame()) {
-                game.stopAnimation();
-            }
-
             final Set<UUID> participants = collectParticipants(activeCache, game);
             activeCache.unregister(game);
 

@@ -11,7 +11,6 @@ import net.zithium.deluxecoinflip.utility.ItemStackBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +19,7 @@ import java.util.UUID;
 
 public class CoinflipGame implements Cloneable {
 
-    private PlatformScheduler scheduler;
+    private final PlatformScheduler scheduler;
     private final UUID uuid;
     private OfflinePlayer player;
     private String provider;
@@ -44,6 +43,7 @@ public class CoinflipGame implements Cloneable {
     }
 
     public CoinflipGame(UUID uuid, String provider, long amount, OfflinePlayer player, ItemStack cachedHead) {
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.uuid = uuid;
         this.provider = provider;
         this.amount = amount;
@@ -104,39 +104,5 @@ public class CoinflipGame implements Cloneable {
 
     public void attachOpponent(@NotNull UUID opponent) {
         this.opponent = opponent;
-    }
-
-    public void stopAnimation() {
-        this.activeGame = false;
-
-        final Player creatorOnline = (player != null) ? player.getPlayer() : null;
-        final Player opponentOnline = (opponent != null) ? Bukkit.getPlayer(opponent) : null;
-
-        boolean canSchedule = DeluxeCoinflipPlugin.getInstance() != null
-                && DeluxeCoinflipPlugin.getInstance().isEnabled();
-
-        if (creatorOnline != null) {
-            if (canSchedule) {
-                if (creatorOnline.isOnline()) {
-                    scheduler.runAtEntityLater(creatorOnline, () -> creatorOnline.closeInventory(), 20L);
-                }
-            } else {
-                if (creatorOnline.isOnline()) {
-                    creatorOnline.closeInventory();
-                }
-            }
-        }
-
-        if (opponentOnline != null) {
-            if (canSchedule) {
-                if (opponentOnline.isOnline()) {
-                    scheduler.runAtEntityLater(opponentOnline, () -> opponentOnline.closeInventory(), 20L);
-                }
-            } else {
-                if (opponentOnline.isOnline()) {
-                    opponentOnline.closeInventory();
-                }
-            }
-        }
     }
 }

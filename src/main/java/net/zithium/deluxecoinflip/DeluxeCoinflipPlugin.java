@@ -24,7 +24,6 @@ import net.zithium.deluxecoinflip.game.GameManager;
 import net.zithium.deluxecoinflip.hook.DiscordHook;
 import net.zithium.deluxecoinflip.hook.PlaceholderAPIHook;
 import net.zithium.deluxecoinflip.listener.PlayerChatListener;
-import net.zithium.deluxecoinflip.listener.game.ActiveGameQuitListener;
 import net.zithium.deluxecoinflip.listener.game.GameQuitListener;
 import net.zithium.deluxecoinflip.menu.DupeProtection;
 import net.zithium.deluxecoinflip.menu.InventoryManager;
@@ -124,7 +123,7 @@ public class DeluxeCoinflipPlugin extends JavaPlugin implements DeluxeCoinflipAP
         }
 
         discordHook = new DiscordHook(this);
-        
+
         customStatManager = new CustomStatManager(getLogger());
 
         gameManager = new GameManager(this);
@@ -158,7 +157,6 @@ public class DeluxeCoinflipPlugin extends JavaPlugin implements DeluxeCoinflipAP
         );
 
         new PlayerChatListener(this);
-        new ActiveGameQuitListener(this);
         new GameQuitListener(this);
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {

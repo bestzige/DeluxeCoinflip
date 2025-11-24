@@ -5,7 +5,6 @@
 
 package net.zithium.deluxecoinflip.listener.game;
 
-import com.tcoded.folialib.impl.PlatformScheduler;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.config.Messages;
 import net.zithium.deluxecoinflip.economy.EconomyManager;
@@ -19,14 +18,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
-public final class GameQuitListener implements Listener {
-
-    private final DeluxeCoinflipPlugin plugin;
-    private final PlatformScheduler scheduler;
+public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener {
 
     public GameQuitListener(@NotNull DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
-        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -34,8 +29,20 @@ public final class GameQuitListener implements Listener {
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         final Player quitter = event.getPlayer();
 
+        if (plugin.getActiveGamesCache().isInGame(quitter.getUniqueId())) {
+            return;
+        }
+
         final CoinflipGame game = plugin.getGameManager().getCoinflipGame(quitter.getUniqueId());
-        if (game == null || game.isActiveGame()) {
+        if (game == null) {
+            return;
+        }
+
+        if (game.isActiveGame()) {
+            return;
+        }
+
+        if (!game.getPlayerUUID().equals(quitter.getUniqueId())) {
             return;
         }
 
@@ -43,7 +50,6 @@ public final class GameQuitListener implements Listener {
         final EconomyProvider economyProvider = economyManager.getEconomyProvider(game.getProvider());
         if (economyProvider == null) {
             plugin.getLogger().warning("[DeluxeCoinflip] Missing economy provider '" + game.getProvider() + "'; refund skipped for " + quitter.getName() + ".");
-            scheduler.runAsync(task -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
             plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
             return;
         }
@@ -55,13 +61,12 @@ public final class GameQuitListener implements Listener {
 
         if (quitter.isOnline()) {
             Messages.GAME_REFUNDED.send(
-                quitter,
-                "{AMOUNT}", amountFormatted,
-                "{CURRENCY}", game.getProvider()
+                  quitter,
+                  "{AMOUNT}", amountFormatted,
+                  "{CURRENCY}", game.getProvider()
             );
         }
 
-        scheduler.runAsync(task -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
         plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
     }
 }

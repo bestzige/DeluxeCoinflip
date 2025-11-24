@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.listener;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
@@ -22,11 +23,9 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import java.util.Locale;
 import java.util.UUID;
 
-public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listener {
+public final class PlayerChatListener implements Listener {
 
     public PlayerChatListener(DeluxeCoinflipPlugin plugin) {
-        this.plugin = plugin;
-
         try {
             Class.forName("io.papermc.paper.event.player.AsyncChatEvent", false, plugin.getClass().getClassLoader());
             plugin.getServer().getPluginManager().registerEvents(new PaperHandler(plugin), plugin);
@@ -39,7 +38,15 @@ public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listene
      * Paper handler using AsyncChatEvent + Adventure.
      * Only registered when Paper's event exists.
      */
-    private record PaperHandler(DeluxeCoinflipPlugin plugin) implements Listener {
+    private static final class PaperHandler implements Listener {
+
+        private final DeluxeCoinflipPlugin plugin;
+        private final PlatformScheduler scheduler;
+
+        private PaperHandler(DeluxeCoinflipPlugin plugin) {
+            this.plugin = plugin;
+            this.scheduler = DeluxeCoinflipPlugin.scheduler();
+        }
 
         @EventHandler(priority = EventPriority.LOWEST)
         public void onPlayerChat(AsyncChatEvent event) {
@@ -63,7 +70,7 @@ public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listene
                 event.setCancelled(true);
                 plugin.getListenerCache().invalidate(uuid);
                 Messages.CHAT_CANCELLED.send(player);
-                plugin.getScheduler().runTask(() -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
+                scheduler.runNextTick(task -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
                 return;
             }
 
@@ -96,7 +103,7 @@ public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listene
             plugin.getListenerCache().invalidate(uuid);
             game.setAmount(amount);
 
-            plugin.getScheduler().runTask(() -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
+            scheduler.runNextTick(task -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
         }
     }
 
@@ -104,10 +111,16 @@ public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listene
      * Spigot handler using AsyncPlayerChatEvent (deprecated on Paper).
      * Registered only when Paper's event is absent.
      */
-    private record SpigotHandler(DeluxeCoinflipPlugin plugin) implements Listener {
+    private static final class SpigotHandler implements Listener {
 
-        // This is marked as deprecated. Given the presence of
-        // this comment, I see no reason to display the warning.
+        private final DeluxeCoinflipPlugin plugin;
+        private final PlatformScheduler scheduler;
+
+        private SpigotHandler(DeluxeCoinflipPlugin plugin) {
+            this.plugin = plugin;
+            this.scheduler = DeluxeCoinflipPlugin.scheduler();
+        }
+
         @SuppressWarnings("deprecation")
         @EventHandler(priority = EventPriority.LOWEST)
         public void onPlayerChat(AsyncPlayerChatEvent event) {
@@ -128,7 +141,7 @@ public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listene
                 event.setCancelled(true);
                 plugin.getListenerCache().invalidate(uuid);
                 Messages.CHAT_CANCELLED.send(player);
-                plugin.getScheduler().runTask(() -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
+                scheduler.runNextTick(task -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
                 return;
             }
 
@@ -161,7 +174,7 @@ public record PlayerChatListener(DeluxeCoinflipPlugin plugin) implements Listene
             plugin.getListenerCache().invalidate(uuid);
             game.setAmount(amount);
 
-            plugin.getScheduler().runTask(() -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
+            scheduler.runNextTick(task -> plugin.getInventoryManager().getGameBuilderGUI().openGameBuilderGUI(player, game));
         }
     }
 }

@@ -5,9 +5,10 @@
 
 package net.zithium.deluxecoinflip.menu.inventories;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
-import me.nahu.scheduler.wrapper.WrappedScheduler;
 import net.kyori.adventure.text.Component;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.api.events.CoinflipCompletedEvent;
@@ -37,11 +38,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class CoinflipGUI implements Listener {
 
     private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
     private final EconomyManager economyManager;
     private final FileConfiguration config;
     private final GameAnimationRunner gameAnimationRunner;
@@ -53,6 +56,7 @@ public class CoinflipGUI implements Listener {
 
     public CoinflipGUI(@NotNull DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.economyManager = plugin.getEconomyManager();
         this.config = plugin.getConfigHandler(ConfigType.CONFIG).getConfig();
         this.gameAnimationRunner = new GameAnimationRunner(plugin);
@@ -96,7 +100,7 @@ public class CoinflipGUI implements Listener {
         return gui;
     }
 
-    public void startAnimation(WrappedScheduler scheduler, Gui gui, GuiItem winnerHead, GuiItem loserHead,
+    public void startAnimation(Gui gui, GuiItem winnerHead, GuiItem loserHead,
                                OfflinePlayer winner, OfflinePlayer loser, CoinflipGame game,
                                Player targetPlayer, SecureRandom random, boolean isWinnerThread) {
 
@@ -129,15 +133,16 @@ public class CoinflipGUI implements Listener {
         long winAmount = game.getAmount() * 2L;
         long beforeTax = winAmount / 2L;
 
-        class AnimationLoop implements Runnable {
+        class AnimationLoop implements Consumer<WrappedTask> {
             @Override
-            public void run() {
+            public void accept(WrappedTask task) {
                 if (!game.isActiveGame()) {
-                    scheduler.runTaskLaterAtEntity(targetPlayer, () -> {
+                    scheduler.runAtEntityLater(targetPlayer, innerTask -> {
                         if (targetPlayer.isOnline()) {
                             targetPlayer.closeInventory();
                         }
                     }, 20L);
+
                     return;
                 }
 
@@ -149,7 +154,7 @@ public class CoinflipGUI implements Listener {
 
                     if (targetPlayer.isOnline()) {
                         playConfiguredSound(targetPlayer, "coinflip-gui.sounds.animation_complete", Sound.ENTITY_PLAYER_LEVELUP);
-                        scheduler.runTaskLaterAtEntity(targetPlayer, () -> {
+                        scheduler.runAtEntityLater(targetPlayer, innerTask -> {
                             if (targetPlayer.isOnline()) {
                                 targetPlayer.closeInventory();
                             }
@@ -170,7 +175,7 @@ public class CoinflipGUI implements Listener {
                     if (isWinnerThread) {
                         long providedWinAmount = finalWinAmount;
 
-                        scheduler.runTask(() -> {
+                        scheduler.runNextTick(innerTask -> {
                             if (!game.isActiveGame()) {
                                 return;
                             }
@@ -231,12 +236,12 @@ public class CoinflipGUI implements Listener {
                 }
 
                 if (game.isActiveGame()) {
-                    scheduler.runTaskLaterAtEntity(targetPlayer, this, 10L);
+                    scheduler.runAtEntityLater(targetPlayer, this, 10L);
                 }
             }
         }
 
-        scheduler.runTaskAtEntity(targetPlayer, new AnimationLoop());
+        scheduler.runAtEntity(targetPlayer, new AnimationLoop());
     }
 
     private void updatePlayerStats(StorageManager storageManager, OfflinePlayer player, long winAmount, long beforeTax, boolean isWinner) {

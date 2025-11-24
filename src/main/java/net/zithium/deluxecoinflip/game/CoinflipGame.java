@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.game;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.utility.ItemStackBuilder;
 import org.bukkit.Bukkit;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 public class CoinflipGame implements Cloneable {
 
+    private PlatformScheduler scheduler;
     private final UUID uuid;
     private OfflinePlayer player;
     private String provider;
@@ -29,12 +31,13 @@ public class CoinflipGame implements Cloneable {
     private transient volatile UUID opponent;
 
     public CoinflipGame(UUID uuid, String provider, long amount) {
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.uuid = uuid;
         this.provider = provider;
         this.amount = amount;
         this.cachedHead = new ItemStack(Material.PLAYER_HEAD);
 
-        DeluxeCoinflipPlugin.getInstance().getScheduler().runTaskAsynchronously(() -> {
+        scheduler.runAsync(task -> {
             this.player = Bukkit.getOfflinePlayer(uuid);
             this.cachedHead = new ItemStackBuilder(Material.PLAYER_HEAD).setSkullOwner(player).build();
         });
@@ -114,7 +117,7 @@ public class CoinflipGame implements Cloneable {
 
         if (creatorOnline != null) {
             if (canSchedule) {
-                DeluxeCoinflipPlugin.getInstance().getScheduler().runTaskLaterAtEntity(creatorOnline, () -> {
+                scheduler.runAtEntityLater(creatorOnline, () -> {
                     if (creatorOnline.isOnline()) {
                         creatorOnline.closeInventory();
                     }
@@ -128,7 +131,7 @@ public class CoinflipGame implements Cloneable {
 
         if (opponentOnline != null) {
             if (canSchedule) {
-                DeluxeCoinflipPlugin.getInstance().getScheduler().runTaskLaterAtEntity(opponentOnline, () -> {
+                scheduler.runAtEntityLater(opponentOnline, () -> {
                     if (opponentOnline.isOnline()) {
                         opponentOnline.closeInventory();
                     }

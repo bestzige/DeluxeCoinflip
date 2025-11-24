@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("com.gradleup.shadow") version "9.0.1"
+    id("com.gradleup.shadow") version "9.2.2"
 }
 
 group = "net.zithium"
@@ -13,6 +13,7 @@ repositories {
     maven("https://ci.ender.zone/plugin/repository/everything/")
     maven("https://raw.githubusercontent.com/TeamVK/maven-repository/master/release/")
     maven("https://jitpack.io")
+    maven("https://repo.tcoded.com/releases")
     maven("https://repo.codemc.org/repository/maven-public/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://libraries.minecraft.net/")
@@ -25,11 +26,11 @@ dependencies {
     implementation("dev.triumphteam:triumph-gui:3.1.11")
     implementation("org.bstats:bstats-bukkit:3.1.0")
     implementation("com.github.ItzSave:ZithiumLibrary:1f5182b77f")
-    implementation("com.github.NahuLD.folia-scheduler-wrapper:folia-scheduler-wrapper:v0.0.3")
+    implementation("com.tcoded:FoliaLib:0.5.1")
 
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 
-    compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("me.clip:placeholderapi:2.11.7")
     compileOnly("com.mojang:authlib:1.5.21")
     compileOnly("org.jetbrains:annotations:26.0.2")
 
@@ -51,6 +52,7 @@ tasks {
     build {
         dependsOn("shadowJar")
     }
+
     processResources {
         val props = mapOf("version" to version)
         inputs.properties(props)
@@ -62,17 +64,19 @@ tasks {
 
     shadowJar {
         minimize {
-            exclude(dependency("com.github.NahuLD.folia-scheduler-wrapper:folia-scheduler-wrapper:.*"))
+            exclude(dependency("com.tcoded:FoliaLib:.*"))
         }
 
         dependencies {
             exclude(dependency("net.kyori:.*"))
         }
+
         exclude("net/kyori/**")
 
         archiveFileName.set("DeluxeCoinflip-${project.version}.jar")
         relocate("dev.triumphteam.gui", "net.zithium.deluxecoinflip.libs.gui")
         relocate("net.zithium.library", "net.zithium.deluxecoinflip.libs.library")
+        relocate("com.tcoded.folialib", "net.zithium.deluxecoinflip.libs.folialib")
         relocate("org.bstats", "net.zithium.deluxecoinflip.libs.metrics") // bStats
     }
 }

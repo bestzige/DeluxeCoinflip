@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.storage;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.exception.InvalidStorageHandlerException;
 import net.zithium.deluxecoinflip.storage.handler.StorageHandler;
@@ -24,11 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StorageManager implements Listener {
 
     private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
     private final Map<UUID, PlayerData> playerDataMap;
     private StorageHandler storageHandler;
 
     public StorageManager(DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.playerDataMap = new ConcurrentHashMap<>();
     }
 
@@ -61,7 +64,7 @@ public class StorageManager implements Listener {
     }
 
     public void updateOfflinePlayerWin(UUID uuid, long profit, long beforeTax) {
-        plugin.getScheduler().runTaskAsynchronously(() -> {
+        scheduler.runAsync(task -> {
             PlayerData playerData = storageHandler.getPlayer(uuid);
             playerData.updateWins();
             playerData.updateProfit(profit);
@@ -71,7 +74,7 @@ public class StorageManager implements Listener {
     }
 
     public void updateOfflinePlayerLoss(UUID uuid, long beforeTax) {
-        plugin.getScheduler().runTaskAsynchronously(() -> {
+        scheduler.runAsync(task -> {
             PlayerData playerData = storageHandler.getPlayer(uuid);
             playerData.updateLosses();
             playerData.updateLosses(beforeTax);
@@ -81,7 +84,7 @@ public class StorageManager implements Listener {
     }
 
     public void loadPlayerData(UUID uuid) {
-        plugin.getScheduler().runTaskAsynchronously(() -> {
+        scheduler.runAsync(task -> {
             PlayerData data = storageHandler.getPlayer(uuid);
             playerDataMap.put(uuid, data);
         });
@@ -89,7 +92,7 @@ public class StorageManager implements Listener {
 
     public void savePlayerData(PlayerData player, boolean removeCache) {
         UUID uuid = player.getUUID();
-        plugin.getScheduler().runTaskAsynchronously(() -> {
+        scheduler.runAsync(task -> {
             storageHandler.savePlayer(player);
             if (removeCache) {
                 playerDataMap.remove(uuid);

@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.listener.game;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.config.Messages;
 import net.zithium.deluxecoinflip.economy.EconomyManager;
@@ -18,10 +19,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
-public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener {
+public final class GameQuitListener implements Listener {
+
+    private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
 
     public GameQuitListener(@NotNull DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -38,7 +43,7 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
         final EconomyProvider economyProvider = economyManager.getEconomyProvider(game.getProvider());
         if (economyProvider == null) {
             plugin.getLogger().warning("[DeluxeCoinflip] Missing economy provider '" + game.getProvider() + "'; refund skipped for " + quitter.getName() + ".");
-            plugin.getScheduler().runTaskAsynchronously(() -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
+            scheduler.runAsync(task -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
             plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
             return;
         }
@@ -56,7 +61,7 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
             );
         }
 
-        plugin.getScheduler().runTaskAsynchronously(() -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
+        scheduler.runAsync(task -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
         plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
     }
 }

@@ -114,8 +114,9 @@ public class DiscordIntegration {
         connection.addRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
 
-        if (this.url == null)
+        if (this.url == null) {
             connection.addRequestProperty("Authorization", "Bot " + this.token);
+        }
 
         connection.setRequestMethod("POST");
 
@@ -370,6 +371,7 @@ public class DiscordIntegration {
                     for (int j = 0; j < len; j++) {
                         builder.append(Array.get(val, j).toString()).append(j != len - 1 ? "," : "");
                     }
+
                     builder.append("]");
                 }
 

@@ -7,6 +7,7 @@ package net.zithium.deluxecoinflip.menu.inventories;
 
 import com.tcoded.folialib.impl.PlatformScheduler;
 import dev.triumphteam.gui.components.GuiAction;
+import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
@@ -77,7 +78,7 @@ public class GamesGUI {
             }
         }
 
-        PaginatedGui gui = dev.triumphteam.gui.guis.Gui.paginated()
+        PaginatedGui gui = Gui.paginated()
                 .rows(guiRows)
                 .title(Component.text(guiTitle))
                 .create();

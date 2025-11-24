@@ -16,7 +16,7 @@ public class CoinflipCompletedEvent extends Event {
 
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
-    private final UUID visitorId;
+    private final UUID winnerId;
     private final UUID loserId;
     private final OfflinePlayer winner;
     private final OfflinePlayer loser;
@@ -26,7 +26,7 @@ public class CoinflipCompletedEvent extends Event {
     public CoinflipCompletedEvent(@NotNull UUID winnerId, @NotNull UUID loserId,
                                   @Nullable OfflinePlayer winner, @Nullable OfflinePlayer loser,
                                   long winnings, boolean forfeit) {
-        this.visitorId = winnerId;
+        this.winnerId = winnerId;
         this.loserId = loserId;
         this.winner = winner;
         this.loser = loser;
@@ -35,7 +35,7 @@ public class CoinflipCompletedEvent extends Event {
     }
 
     public UUID getWinnerId() {
-        return visitorId;
+        return winnerId;
     }
 
     public UUID getLoserId() {

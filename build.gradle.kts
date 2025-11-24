@@ -13,7 +13,7 @@ repositories {
     maven("https://ci.ender.zone/plugin/repository/everything/")
     maven("https://raw.githubusercontent.com/TeamVK/maven-repository/master/release/")
     maven("https://jitpack.io")
-    maven("https://repo.tcoded.com/releases")
+    maven("https://repo.tcoded.com/releases/")
     maven("https://repo.codemc.org/repository/maven-public/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://libraries.minecraft.net/")

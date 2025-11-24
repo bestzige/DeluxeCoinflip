@@ -121,6 +121,8 @@ public final class PlayerChatListener implements Listener {
             this.scheduler = DeluxeCoinflipPlugin.scheduler();
         }
 
+        // This is marked as deprecated. Given the presence of
+        // this comment, I see no reason to display the warning.
         @SuppressWarnings("deprecation")
         @EventHandler(priority = EventPriority.LOWEST)
         public void onPlayerChat(AsyncPlayerChatEvent event) {

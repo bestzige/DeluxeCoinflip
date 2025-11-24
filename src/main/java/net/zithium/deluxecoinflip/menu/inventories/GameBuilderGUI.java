@@ -61,7 +61,7 @@ public class GameBuilderGUI {
         gui.setCloseGuiAction(event -> {
             Player eventPlayer = (Player) event.getPlayer();
             if (!suppressReturn.remove(eventPlayer.getUniqueId())) {
-                scheduler.runAtEntity(eventPlayer, task -> plugin.getInventoryManager().getGamesGUI().openInventory(eventPlayer));
+                plugin.getInventoryManager().getGamesGUI().openInventory(eventPlayer);
             }
         });
 

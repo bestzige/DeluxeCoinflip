@@ -79,6 +79,12 @@ settings:
       enabled: true
       display_currency_name: "Tokens"
 
+    # CoinsEngine Economy (requires BeastTokens plugin)
+    # https://www.spigotmc.org/resources/84121/
+    COINSENGINE:
+      enabled: true
+      display_currency_name: "Coins"
+
     CUSTOM_CURRENCY:
       # Should the custom currency be enabled?
       enabled: true

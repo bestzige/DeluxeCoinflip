@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.zithium"
-version = "2.11.2"
+version = "2.11.3"
 description = "DeluxeCoinflip"
 
 repositories {

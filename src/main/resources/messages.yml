@@ -71,3 +71,12 @@ coinflip:
     - "&eWinner: &a{WINNER}"
     - "&eLoser: &c{LOSER}"
     - ""
+  summary-forfeit:
+    - ""
+    - "         &e&lGame Summary"
+    - "      &a&lWIN BY FORFEIT"
+    - ""
+    - "&eAmount Won: &f${WINNINGS}"
+    - "&eWinner: &a{WINNER}"
+    - "&eLoser: &c{LOSER} &7(Disconnected)"
+    - ""

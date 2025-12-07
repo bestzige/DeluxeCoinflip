@@ -26,9 +26,10 @@ public interface DeluxeCoinflipAPI {
      * Register a custom stat provider to add custom placeholders.
      * This allows external plugins to add their own stats that can be displayed
      * in DeluxeCoinflip menus and messages using {PLACEHOLDER_NAME} format.
-     * 
+     * <p>
      * Example: DeluxeLifestealBridge can register a provider to track
      * {HEARTS_WIN}, {HEARTS_LOST}, and {HEARTS_BET}
+     * </p>
      *
      * @param provider The custom stat provider to register
      * @return true if registered successfully, false if a provider with the same ID already exists

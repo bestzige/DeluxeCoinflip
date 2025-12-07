@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.menu.inventories;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
@@ -37,11 +38,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameBuilderGUI {
 
     private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
     private final EconomyManager economyManager;
     private final Set<UUID> suppressReturn = ConcurrentHashMap.newKeySet();
 
     public GameBuilderGUI(DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.economyManager = plugin.getEconomyManager();
     }
 
@@ -56,9 +59,9 @@ public class GameBuilderGUI {
         gui.setDefaultClickAction(event -> event.setCancelled(true));
 
         gui.setCloseGuiAction(event -> {
-            Player p = (Player) event.getPlayer();
-            if (!suppressReturn.remove(p.getUniqueId())) {
-                plugin.getScheduler().runTaskAtEntity(p, () -> plugin.getInventoryManager().getGamesGUI().openInventory(p));
+            Player eventPlayer = (Player) event.getPlayer();
+            if (!suppressReturn.remove(eventPlayer.getUniqueId())) {
+                plugin.getInventoryManager().getGamesGUI().openInventory(eventPlayer);
             }
         });
 
@@ -68,7 +71,7 @@ public class GameBuilderGUI {
         setupCustomAmount(gui, player, game, cfg);
         setupCreateGame(gui, player, game, cfg);
 
-        plugin.getScheduler().runTaskAtEntity(player, () -> gui.open(player));
+        scheduler.runAtEntity(player, task -> gui.open(player));
     }
 
     private void setFillerItems(Gui gui, FileConfiguration cfg) {
@@ -177,7 +180,7 @@ public class GameBuilderGUI {
                 ItemStackBuilder.getItemStack(section).build(),
                 event -> {
                     suppressReturn.add(player.getUniqueId());
-                    plugin.getScheduler().runTaskAtEntity(player, () -> gui.close(player));
+                    scheduler.runAtEntity(player, task -> gui.close(player));
                     plugin.getListenerCache().put(player.getUniqueId(), game);
                     Messages.ENTER_VALUE_FOR_GAME.send(
                             player,
@@ -218,7 +221,7 @@ public class GameBuilderGUI {
             }
 
             suppressReturn.add(player.getUniqueId());
-            plugin.getScheduler().runTaskAtEntity(player, () -> gui.close(player));
+            scheduler.runAtEntity(player, task -> gui.close(player));
 
             CoinflipCreatedEvent createdEvent = new CoinflipCreatedEvent(player, game);
             Bukkit.getPluginManager().callEvent(createdEvent);
@@ -317,7 +320,7 @@ public class GameBuilderGUI {
         ConfigurationSection errorSection = cfg.getConfigurationSection(configPath);
         if (errorSection != null) {
             clicked.setItem(event.getSlot(), ItemStackBuilder.getItemStack(errorSection).build());
-            plugin.getScheduler().runTaskLater(() -> {
+            scheduler.runLater(task -> {
                 if (event.getSlot() >= 0 && event.getSlot() < clicked.getSize()) {
                     clicked.setItem(event.getSlot(), original);
                 }

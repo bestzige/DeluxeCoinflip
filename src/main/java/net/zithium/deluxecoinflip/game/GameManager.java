@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.game;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.storage.StorageManager;
 import org.jetbrains.annotations.NotNull;
@@ -16,11 +17,13 @@ import java.util.UUID;
 public class GameManager {
 
     private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
     private final Map<UUID, CoinflipGame> coinflipGames;
     private final StorageManager storageManager;
 
     public GameManager(DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.coinflipGames = new HashMap<>();
         this.storageManager = plugin.getStorageManager();
     }
@@ -33,7 +36,7 @@ public class GameManager {
      */
     public void addCoinflipGame(UUID uuid, CoinflipGame game) {
         coinflipGames.put(uuid, game);
-        plugin.getScheduler().runTaskAsynchronously(() -> storageManager.getStorageHandler().saveCoinflip(game));
+        scheduler.runAsync(task -> storageManager.getStorageHandler().saveCoinflip(game));
     }
 
     /**
@@ -58,7 +61,7 @@ public class GameManager {
             return;
         }
 
-        plugin.getScheduler().runTaskAsynchronously(() -> {
+        scheduler.runAsync(task -> {
             try {
                 storageManager.getStorageHandler().deleteCoinflip(uuid);
             } catch (Exception ex) {

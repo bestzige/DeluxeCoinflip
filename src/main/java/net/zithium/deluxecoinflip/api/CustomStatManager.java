@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class CustomStatManager {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([A-Z_]+)}");
-    
+
     private final List<CustomStatProvider> providers = new ArrayList<>();
     private final Logger logger;
 
@@ -46,7 +46,7 @@ public class CustomStatManager {
                 return false;
             }
         }
-        
+
         providers.add(provider);
         logger.log(Level.INFO, "Registered custom stat provider: " + provider.getProviderId());
         return true;
@@ -63,6 +63,7 @@ public class CustomStatManager {
         if (removed) {
             logger.log(Level.INFO, "Unregistered custom stat provider: " + providerId);
         }
+
         return removed;
     }
 
@@ -91,7 +92,7 @@ public class CustomStatManager {
         }
 
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         while (matcher.find()) {
             String placeholder = matcher.group(1); // Get the text between {}
@@ -102,6 +103,7 @@ public class CustomStatManager {
                 matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
             }
         }
+
         matcher.appendTail(result);
 
         return result.toString();
@@ -127,6 +129,7 @@ public class CustomStatManager {
                         + provider.getProviderId() + "' for placeholder '" + placeholder + "'", e);
             }
         }
+
         return null;
     }
 }

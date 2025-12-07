@@ -5,7 +5,9 @@
 
 package net.zithium.deluxecoinflip.menu.inventories;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import dev.triumphteam.gui.components.GuiAction;
+import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
@@ -44,11 +46,13 @@ import java.util.logging.Level;
 public class GamesGUI {
 
     private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
     private final EconomyManager economyManager;
     private final Set<UUID> refreshQueued = ConcurrentHashMap.newKeySet();
 
     public GamesGUI(DeluxeCoinflipPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.economyManager = plugin.getEconomyManager();
     }
 
@@ -74,7 +78,7 @@ public class GamesGUI {
             }
         }
 
-        PaginatedGui gui = dev.triumphteam.gui.guis.Gui.paginated()
+        PaginatedGui gui = Gui.paginated()
                 .rows(guiRows)
                 .title(Component.text(guiTitle))
                 .create();
@@ -91,7 +95,7 @@ public class GamesGUI {
                 return;
             }
 
-            plugin.getScheduler().runTaskLaterAtEntity(player, () -> {
+            scheduler.runLater(task -> {
                 try {
                     if (!player.isOnline()) {
                         return;
@@ -165,13 +169,13 @@ public class GamesGUI {
                 gameItem.setAction(events -> {
                     if (!gameManager.getCoinflipGames().containsKey(creatorOnline.getUniqueId())) {
                         Messages.ERROR_GAME_UNAVAILABLE.send(player);
-                        plugin.getScheduler().runTaskAtEntity(player, () -> openInventory(player));
+                        openInventory(player);
                         return;
                     }
 
                     if (player.getUniqueId().equals(creatorOnline.getUniqueId())) {
                         Messages.ERROR_COINFLIP_SELF.send(player);
-                        plugin.getScheduler().runTaskAtEntity(player, () -> gui.close(player));
+                        scheduler.runAtEntity(player, task -> gui.close(player));
                         return;
                     }
 
@@ -190,7 +194,7 @@ public class GamesGUI {
                         ConfigurationSection noFundsSection = config.getConfigurationSection("games-gui.error-no-funds");
                         if (noFundsSection != null && events.getClickedInventory() != null) {
                             events.getClickedInventory().setItem(events.getSlot(), ItemStackBuilder.getItemStack(noFundsSection).build());
-                            plugin.getScheduler().runTaskLater(() -> {
+                            scheduler.runLater(task -> {
                                 if (events.getClickedInventory() != null) {
                                     events.getClickedInventory().setItem(events.getSlot(), previousItem);
                                 }
@@ -204,10 +208,8 @@ public class GamesGUI {
                     selectedProvider.withdraw(player, selectedGame.getAmount());
                     gameManager.removeCoinflipGame(creatorOnline.getUniqueId());
 
-                    plugin.getScheduler().runTaskAtEntity(player, () -> {
-                        events.getWhoClicked().closeInventory();
-                        plugin.getInventoryManager().getCoinflipGUI().startGame(creatorOnline, player, selectedGame);
-                    });
+                    scheduler.runAtEntity(player, task -> events.getWhoClicked().closeInventory());
+                    plugin.getInventoryManager().getCoinflipGUI().startGame(creatorOnline, player, selectedGame);
                 });
 
                 gui.addItem(gameItem);
@@ -225,13 +227,11 @@ public class GamesGUI {
             }
         }
 
-        plugin.getScheduler().runTaskAtEntity(player, () -> gui.open(player));
+        scheduler.runAtEntity(player, task -> gui.open(player));
 
-        plugin.getScheduler().runTaskLaterAtEntity(player, () -> {
-            if (player.getOpenInventory().getTopInventory().equals(gui.getInventory())) {
-                gui.update();
-            }
-        }, 2L);
+        if (player.getOpenInventory().getTopInventory().equals(gui.getInventory())) {
+            scheduler.runLater(task -> gui.update(), 2L);
+        }
     }
 
     private @NotNull GuiItem getGuiItem(Player player, ItemStack newGameItem, String initialProviderKey) {

@@ -5,6 +5,7 @@
 
 package net.zithium.deluxecoinflip.economy.provider.impl;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.zithium.deluxecoinflip.DeluxeCoinflipPlugin;
 import net.zithium.deluxecoinflip.economy.provider.EconomyProvider;
@@ -15,6 +16,7 @@ import org.bukkit.command.ConsoleCommandSender;
 public class CustomCurrencyProvider extends EconomyProvider {
 
     private final DeluxeCoinflipPlugin plugin;
+    private final PlatformScheduler scheduler;
 
     private final String rawBalancePlaceholder;
     private final String withdrawCommandTemplate;
@@ -23,6 +25,7 @@ public class CustomCurrencyProvider extends EconomyProvider {
     public CustomCurrencyProvider(String identifier, DeluxeCoinflipPlugin plugin) {
         super(identifier);
         this.plugin = plugin;
+        this.scheduler = DeluxeCoinflipPlugin.scheduler();
         this.rawBalancePlaceholder = plugin.getConfig().getString(
                 "settings.providers.CUSTOM_CURRENCY.raw_balance_placeholder",
                 "%vault_eco_Balance_fixed%"
@@ -73,7 +76,7 @@ public class CustomCurrencyProvider extends EconomyProvider {
 
     private void executeCommand(String command) {
         ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
-        plugin.getScheduler().runTask(() -> Bukkit.dispatchCommand(console, command));
+        scheduler.runNextTick(task -> Bukkit.dispatchCommand(console, command));
     }
 
     private static String getNameOrUuid(OfflinePlayer player) {

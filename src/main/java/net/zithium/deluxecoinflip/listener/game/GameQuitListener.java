@@ -29,8 +29,20 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         final Player quitter = event.getPlayer();
 
+        if (plugin.getActiveGamesCache().isInGame(quitter.getUniqueId())) {
+            return;
+        }
+
         final CoinflipGame game = plugin.getGameManager().getCoinflipGame(quitter.getUniqueId());
-        if (game == null || game.isActiveGame()) {
+        if (game == null) {
+            return;
+        }
+
+        if (game.isActiveGame()) {
+            return;
+        }
+
+        if (!game.getPlayerUUID().equals(quitter.getUniqueId())) {
             return;
         }
 
@@ -38,7 +50,6 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
         final EconomyProvider economyProvider = economyManager.getEconomyProvider(game.getProvider());
         if (economyProvider == null) {
             plugin.getLogger().warning("[DeluxeCoinflip] Missing economy provider '" + game.getProvider() + "'; refund skipped for " + quitter.getName() + ".");
-            plugin.getScheduler().runTaskAsynchronously(() -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
             plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
             return;
         }
@@ -50,13 +61,12 @@ public record GameQuitListener(DeluxeCoinflipPlugin plugin) implements Listener 
 
         if (quitter.isOnline()) {
             Messages.GAME_REFUNDED.send(
-                quitter,
-                "{AMOUNT}", amountFormatted,
-                "{CURRENCY}", game.getProvider()
+                  quitter,
+                  "{AMOUNT}", amountFormatted,
+                  "{CURRENCY}", game.getProvider()
             );
         }
 
-        plugin.getScheduler().runTaskAsynchronously(() -> plugin.getStorageManager().getStorageHandler().deleteCoinflip(game.getPlayerUUID()));
         plugin.getGameManager().removeCoinflipGame(game.getPlayerUUID());
     }
 }

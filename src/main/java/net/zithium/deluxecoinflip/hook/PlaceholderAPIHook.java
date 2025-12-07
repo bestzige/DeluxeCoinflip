@@ -89,7 +89,6 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
         }
 
         // Try custom stat providers (converts identifier to uppercase for consistency)
-        String customValue = plugin.getCustomStatManager().getPlaceholderValue(player, identifier.toUpperCase());
-        return customValue != null ? customValue : null;
+        return plugin.getCustomStatManager().getPlaceholderValue(player, identifier.toUpperCase());
     }
 }

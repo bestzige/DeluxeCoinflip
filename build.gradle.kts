@@ -15,7 +15,7 @@ repositories {
     maven("https://jitpack.io")
     maven("https://repo.tcoded.com/releases/")
     maven("https://repo.codemc.org/repository/maven-public/")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven("https://repo.extendedclip.com/releases/")
     maven("https://libraries.minecraft.net/")
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven("https://repo.rosewooddev.io/repository/public/")
@@ -30,7 +30,7 @@ dependencies {
 
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 
-    compileOnly("me.clip:placeholderapi:2.11.7")
+    compileOnly("me.clip:placeholderapi:2.12.2")
     compileOnly("com.mojang:authlib:1.5.21")
     compileOnly("org.jetbrains:annotations:26.0.2-1")
 

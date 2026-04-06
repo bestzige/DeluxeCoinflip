@@ -11,8 +11,16 @@ metrics: true
 
 storage:
   # Types available:
-  # - SQLITE
+  # - SQLITE, MYSQL
   type: SQLITE
+  mysql:
+    table-prefix: "coinflip_"
+    host: 127.0.0.1
+    port: 3306
+    database: deluxecoinflip
+    username: root
+    password: ""
+    ssl: false
 
 settings:
   # Min/max must be between 0 and 9,223,372,036,854,775,808

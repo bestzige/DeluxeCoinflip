@@ -57,10 +57,52 @@ public class HistoryGUI {
         }
 
         final PlayerData playerData = optionalPlayerData.get();
+        final FileConfiguration config = this.plugin.getConfigHandler(ConfigType.CONFIG).getConfig();
+        final int guiRows = Math.max(1, config.getInt("history-gui.rows", 4));
+        final int pageSize = this.getPageSize(guiRows);
+
+        this.scheduler.runAsync(task -> {
+            try {
+                final int totalEntries = Math.max(0, this.plugin.getStorageManager().getStorageHandler().getCoinflipHistoryCount(targetUUID));
+                final int totalPages = Math.max(1, (int) Math.ceil(totalEntries / (double) pageSize));
+                final int currentPage = Math.min(Math.max(1, requestedPage), totalPages);
+                final int offset = (currentPage - 1) * pageSize;
+
+                final List<CoinflipHistory> historyList = this.plugin.getStorageManager()
+                        .getStorageHandler()
+                        .getCoinflipHistory(targetUUID, offset, pageSize);
+
+                this.scheduler.runAtEntity(viewer, entityTask -> {
+                    if (!viewer.isOnline()) {
+                        return;
+                    }
+
+                    this.openInventorySync(viewer, targetUUID, playerData, config, guiRows, totalEntries, totalPages, currentPage, historyList);
+                });
+            } catch (final Exception exception) {
+                this.plugin.getLogger().log(Level.SEVERE, "Failed to load coinflip history for " + targetUUID, exception);
+                this.scheduler.runAtEntity(viewer, entityTask -> {
+                    if (viewer.isOnline()) {
+                        viewer.sendMessage(TextUtil.color("&cFailed to load coinflip history. Please try again later."));
+                    }
+                });
+            }
+        });
+    }
+
+    private void openInventorySync(
+            final Player viewer,
+            final UUID targetUUID,
+            final PlayerData playerData,
+            final FileConfiguration config,
+            final int guiRows,
+            final int totalEntries,
+            final int totalPages,
+            final int currentPage,
+            final List<CoinflipHistory> historyList
+    ) {
         final OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
         final String targetName = target.getName() != null ? target.getName() : targetUUID.toString();
-
-        final FileConfiguration config = this.plugin.getConfigHandler(ConfigType.CONFIG).getConfig();
 
         final String guiTitle = TextUtil.color(
                 config.getString("history-gui.title", "&lCOINFLIP HISTORY")
@@ -68,18 +110,7 @@ public class HistoryGUI {
                         .replace("{VIEWER}", viewer.getName())
         );
 
-        final int guiRows = Math.max(1, config.getInt("history-gui.rows", 4));
-        final int pageSize = this.getPageSize(guiRows);
         final String dateFormatPattern = config.getString("history-gui.date-format", "dd/MM/yyyy HH:mm");
-
-        final int totalEntries = Math.max(0, this.plugin.getStorageManager().getStorageHandler().getCoinflipHistoryCount(targetUUID));
-        final int totalPages = Math.max(1, (int) Math.ceil(totalEntries / (double) pageSize));
-        final int currentPage = Math.min(Math.max(1, requestedPage), totalPages);
-        final int offset = (currentPage - 1) * pageSize;
-
-        final List<CoinflipHistory> historyList = this.plugin.getStorageManager()
-                .getStorageHandler()
-                .getCoinflipHistory(targetUUID, offset, pageSize);
 
         final PaginatedGui gui = Gui.paginated()
                 .rows(guiRows)
@@ -208,7 +239,7 @@ public class HistoryGUI {
                 event -> this.plugin.getInventoryManager().getGamesGUI().openInventory(viewer)
         );
 
-        this.scheduler.runAtEntity(viewer, task -> gui.open(viewer));
+        gui.open(viewer);
     }
 
     private int getPageSize(final int rows) {

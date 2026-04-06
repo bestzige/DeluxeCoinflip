@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
-    implementation("dev.triumphteam:triumph-gui:3.1.11")
+    implementation("dev.triumphteam:triumph-gui:3.1.13")
     implementation("org.bstats:bstats-bukkit:3.1.0")
     implementation("com.github.ItzSave:ZithiumLibrary:v2.1.2")
     implementation("com.github.NahuLD.folia-scheduler-wrapper:folia-scheduler-wrapper:v0.0.3")
@@ -30,7 +30,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 
     compileOnly("me.clip:placeholderapi:2.11.6")
-    compileOnly("com.mojang:authlib:1.5.21")
+    compileOnly("com.mojang:authlib:3.13.56")
     compileOnly("org.jetbrains:annotations:26.0.2")
 
     compileOnly("com.github.Realizedd:TokenManager:3.2.4") { isTransitive = false }
